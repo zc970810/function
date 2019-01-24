@@ -412,3 +412,239 @@ function down_file(string $filename,array $allowDownExt=array('jpeg','jpg','png'
   fclose($handle);
   exit;
 }
+
+
+
+
+// 定义错误常量,是给下面上传文件定义的，防止多个文件上传走循环时候显示重复定义变量
+define('UPLOAD_ERRS',array(
+		"UPLOAD_ERR_OK"         =>"没有发生错误，文件上传成功",
+		"UPLOAD_ERR_INI_SIZE"   =>"上传的文件超过了php.ini中upload_max_filesize（默认情况为2M）选项限制的值",
+		"UPLOAD_ERR_FORM_SIZE"  =>"上传文件的大小超过了HTML标点中MAX_FILE_SIZE选项的值",
+		"UPLOAD_ERR_PARTIAL"    =>"文件只有部分被上传",
+		"UPLOAD_ERR_NO_FILE"    =>"没有文件被上传",
+		"UPLOAD_ERR_NO_TMP_DIR" =>"找不到临时文件",
+		"UPLOAD_ERR_CANT_WRITE" =>"文件写入失败",
+		"UPLOAD_ERR_EXTENSION"  =>"上传的文件被PHP扩展程序中断",
+		//上面是$_FILES带的error参数错误结果，下面写我自定义的
+		"FILE_TYPE_NOT_CONFORMING"=>"上传文件类型不符合规定",
+		"FILE_CORRUPTED"=>"请上传一张真实的图片",
+		"FILE_SIZE_VIOLATION"=>"您上传的文件超过规定大小",
+		"UPLOAD_FILE_VIA_HTTP_POST"=>"请通过HTTP POST上传文件",
+		"FILE_NOVE_FAILED"=>"文件移动失败"
+	));
+/**
+ * upload_file
+ * @param 	array 		$fileInfo 		通过_FILES接收的数组
+ * @param 	array 		$allowExt 		规定可以上传的文件名
+ * @param 	bool 		$imageFlag 		是否检测上传文件为真实图片
+ * @param 	int 		$maxSize 		最大上传文件大小
+ * @param 	string 		$uploadPath 	上传文件存储位置
+ * @return 	string 						错误信息|上传文件存储位置的路径
+ * 上传文件表单属性应添加enctype="multipart/form-data"
+ */
+function upload_file(array $fileInfo,array $allowExt=['jpg','png','jpeg','gif'],bool $imageFlag=false,int $maxSize=2097152,string $uploadPath='./uploads')
+{
+	
+	
+
+	// 读取fileInfo的数据
+	$name     = $fileInfo['name'];
+	$type     = $fileInfo['type'];
+	$tmp_name = $fileInfo['tmp_name'];
+	$error    = $fileInfo['error'];
+	$size     = $fileInfo['size'];
+
+	// 判断错误类型
+	if ($error!==0) {
+		switch ($error) {
+			case 1:
+				$msg = UPLOAD_ERRS['UPLOAD_ERR_INI_SIZE'];
+				break;
+			case 2:
+				$msg = UPLOAD_ERRS['UPLOAD_ERR_FORM_SIZE'];
+				break;
+			case 3:
+				$msg = UPLOAD_ERRS['UPLOAD_ERR_PARTIAL'];
+				break;
+			case 4:
+				$msg = UPLOAD_ERRS['UPLOAD_ERR_NO_FILE'];
+				break;
+			case 6:
+				$msg = UPLOAD_ERRS['UPLOAD_ERR_NO_TMP_DIR'];
+				break;
+			case 7:
+				$msg = UPLOAD_ERRS['UPLOAD_ERR_CANT_WRITE'];
+				break;
+			case 8:
+				$msg = UPLOAD_ERRS['UPLOAD_ERR_EXTENSION'];
+				break;
+		}
+		echo $msg;
+		return false;
+	}
+
+	// 获取上传的文件的后缀，判断后缀是否符合规定
+	$ext = strtolower(pathinfo($name,PATHINFO_EXTENSION));
+	if (!in_array($ext, $allowExt)) {
+		echo UPLOAD_ERRS['FILE_TYPE_NOT_CONFORMING'];
+		return false;
+	}
+
+	// 判断是否为一张真实的图片，因为仅在上传图片时使用所以加一个参数,默认是不判断的
+	if ($imageFlag) {
+		if (@!getimagesize($tmp_name)) {
+			echo UPLOAD_ERRS['FILE_CORRUPTED'];
+			return false;
+		}
+	}
+	
+	// 判断上传文件的大小是否符合规定
+	if ($size>$maxSize) {
+		echo UPLOAD_ERRS['FILE_SIZE_VIOLATION'];
+		return false;
+	}
+
+	// 判断文件是不是通过HTTP POST上传的
+	if (!is_uploaded_file($tmp_name)) {
+		echo UPLOAD_ERRS['UPLOAD_FILE_VIA_HTTP_POST'];
+		return false;
+	}
+
+	// 如果存放上传路径的文件夹不存在就创建一个
+	if (!is_dir($uploadPath)) {
+		mkdir($uploadPath,0777,true);
+	}
+
+	// 生产唯一文件名
+	$newName = pathinfo($name)['filename'];
+	$uniqidName = $newName.'_'.uniqid();
+	// 给文件名加上路径
+	$dest = $uploadPath.DIRECTORY_SEPARATOR.$uniqidName.'.'.$ext;
+	// 移动临时文件到指定的存储位置
+	if (@!move_uploaded_file($tmp_name, $dest)) {
+		echo UPLOAD_ERRS['FILE_NOVE_FAILED'];
+		return false;
+	}else{
+		echo "文件上传成功";
+		return $dest;
+	}
+
+}
+
+
+
+/**
+ * upload_multiple_files 			多文件上传
+ * @param  array 	$filearray 		多文件上传通过_FILES获得的数组
+ * @return array 					upload_file函数的结果
+ */
+function upload_multiple_files(array $filearray)
+{
+	foreach ($filearray['name'] as $key => $value) {
+	 	$fileInfo[$key]['name']=$filearray['name'][$key];
+	 	$fileInfo[$key]['type']=$filearray['type'][$key];
+	 	$fileInfo[$key]['tmp_name']=$filearray['tmp_name'][$key];
+	 	$fileInfo[$key]['error']=$filearray['error'][$key];
+	 	$fileInfo[$key]['size']=$filearray['size'][$key];
+	} 
+	foreach ($fileInfo as $key => $value) {
+		upload_file($value,['doc']);
+		echo '<br>';
+	}
+}
+
+
+
+
+/**
+ * 压缩单个文件
+ * @method zip_file
+ * @param  string   $filename 文件名
+ * @return boolean             true|false
+ */
+function zip_file(string $filename){
+  if(!is_file($filename)){
+    return false;
+  }
+  $zip=new ZipArchive();
+  $zipName=basename($filename).'.zip';
+  //打开指定压缩包，不存在则创建，存在则覆盖
+  if($zip->open($zipName,ZipArchive::CREATE|ZipArchive::OVERWRITE)){
+    //将文件添加到压缩包中
+    if($zip->addFile($filename)){
+      $zip->close();
+      @unlink($filename);
+      return true;
+    }else{
+      return false;
+    }
+  }else{
+    return false;
+  }
+}
+// zip_file('dome.php');
+
+
+
+/**
+ * 多文件压缩
+ * @method zip_files
+ * @param  string    $zipName 压缩包的名称，.zip结尾
+ * @param  string     $files   需要压缩文件名，可以是多个
+ * @return boolean             true|false
+ */
+/*
+function zip_files(string $zipName,...$files){
+  //检测压缩包名称是否正确
+  $zipExt=strtolower(pathinfo($zipName,PATHINFO_EXTENSION));
+  // if('zip'!==$zipExt){
+  // 	echo "1";
+  //   return false;
+  // }
+  $zip=new ZipArchive();
+  if($zip->open($zipName,ZipArchive::CREATE|ZipArchive::OVERWRITE)){
+    foreach($files as $file){
+      if(is_file($file)){
+        $zip->addFile($file);
+      }
+    }
+    $zip->close();
+    return true;
+  }else{
+    return false;
+  }
+}
+var_dump(zip_files('upload.html','dome.php'));
+*/
+
+
+
+/**
+ * 解压缩
+ * @method unzip_file
+ * @param  string     $zipName 压缩包名称
+ * @param  string     $dest    解压到指定目录
+ * @return boolean              true|false
+ */
+/*
+function unzip_file(string $zipName,string $dest){
+  //检测要解压压缩包是否存在
+  if(!is_file($zipName)){
+    return false;
+  }
+  //检测目标路径是否存在
+  if(!is_dir($dest)){
+    mkdir($dest,0777,true);
+  }
+  $zip=new ZipArchive();
+  if($zip->open($zipName)){
+    $zip->extractTo($dest);
+    $zip->close();
+    return true;
+  }else{
+    return false;
+  }
+}
+var_dump(unzip_file('zhaochen.com.zip','a'));
+*/
