@@ -1,59 +1,5 @@
 <?php
 // 创建文件，可自定义目录
-create_file($filename); 
-
-// 删除文件
-del_file($filename);
-
-// 拷贝文件,没有目录会自己创建
-copy_file($filename,'指定目录');
-
-// 重命名
-rename_file($oldname,$newname)
-
-// 剪切文件,没有目录会自己创建
-cut_file($filename,'指定目录');
-
-// 获取文件信息，返回数组，包括创建时间、修改时间、最后访问时间、大小，文件类型
-get_file_info($filename);
-
-// 字节转换，根据大小自适应b kb mb gb tb
-trans_byte(字节,[精度，默认保留两位小数]);
-
-// 读取文件内容，返回字符串
-read_file($filename);
-
-// 读取文件中的内容到数组中,按行读取
-read_file_array($filename,是否过滤空行);
-
-// 向文件中写入内容，如果是数字或对象会序列化数据
-write_file($filename,$data)
-
-// 向文件中写入内容，之前内容不清空，如果是数字或对象会序列化数据
-write_file1($filename,$data)
-
-// 截断文件到指定大小
-truncate_file($filename,int $length);
-
-// 下载文件
-down_file($filename,array 允许下载类型);
-
-// 下载大文件，会分块下载，建议使用这个
-down_file1($filename,array 允许下载类型);
-
-
-// 单文件上传，返回文件上传后的名字
-upload_file(array 上传文件信息, ['文件上传路径',是否检测为真实照片默认检测,array 允许上传文件类型默认为照片, int 最大文件字节默认2mb]);
-
-// 压缩单个文件
-zip_file($filename);
-
-// 多文件压缩
-zip_files(最后生成压缩包的名字,需要压缩的文件名字...);
-
-// 解压文件
-unzip_file($zipName,解压路径)
-
 /**
  * 创建文件操作
  * @method create_file
