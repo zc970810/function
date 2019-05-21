@@ -1,5 +1,88 @@
 <?php
+/*
 // 创建文件，可自定义目录
+create_file($filename); 
+
+// 删除文件
+del_file($filename);
+
+// 拷贝文件,没有目录会自己创建
+copy_file($filename,'指定目录');
+
+// 重命名
+rename_file($oldname,$newname)
+
+// 剪切文件,没有目录会自己创建
+cut_file($filename,'指定目录');
+
+// 获取文件信息，返回数组，包括创建时间、修改时间、最后访问时间、大小，文件类型
+get_file_info($filename);
+
+// 字节转换，根据大小自适应b kb mb gb tb
+trans_byte(字节,[精度，默认保留两位小数]);
+
+// 读取文件内容，返回字符串
+read_file($filename);
+
+// 读取文件中的内容到数组中,按行读取
+read_file_array($filename,是否过滤空行);
+
+// 向文件中写入内容，如果是数字或对象会序列化数据
+write_file($filename,$data)
+
+// 向文件中写入内容，之前内容不清空，如果是数字或对象会序列化数据
+write_file1($filename,$data)
+
+// 截断文件到指定大小
+truncate_file($filename,int $length);
+
+// 下载文件
+down_file($filename,array 允许下载类型);
+
+// 下载大文件，会分块下载，建议使用这个
+down_file1($filename,array 允许下载类型);
+
+
+// 单文件上传，返回文件上传后的名字
+upload_file(array 上传文件信息, ['文件上传路径',是否检测为真实照片默认检测,array 允许上传文件类型默认为照片, int 最大文件字节默认2mb]);
+
+// 压缩单个文件
+zip_file($filename);
+
+// 多文件压缩
+zip_files(最后生成压缩包的名字,需要压缩的文件名字...);
+
+// 解压文件
+unzip_file($zipName,解压路径)
+
+<!-- 下面是关于目录的操作 --> 
+
+// 检测目录是否为空
+check_empty_dir($path)
+
+// 回目录下所有内容,返回数组
+read_directory($path)
+
+// 读取目录中的所有文件，包括内部文件夹下的文件，不建议使用
+get_all_files($path)
+
+// 得到目录大小
+get_dir_size($path)
+
+// 重命名目录
+rename_dir($oldName,$newName)
+
+// 剪切目录
+cut_dir($src,$dst)
+
+// 拷贝目录
+copy_dir($src,$dst)
+
+// 删除非空目录
+del_dir($path)
+*/
+
+
 /**
  * 创建文件操作
  * @method create_file
@@ -549,3 +632,230 @@ function unzip_file(string $zipName,string $dest){
 // var_dump(unzip_file('test2.zip','a'));
 
 
+/**
+ * 检测目录是否为空
+ * @method check_empty_dir
+ * @param  string          $path 目录名
+ * @return boolean         true|false
+ */
+function check_empty_dir(string $path){
+  //检测目录是否存在，存在则打开
+  if(!is_dir($path)){
+    return false;
+  }
+  //打开指定目录
+  $handle=opendir($path);
+  //读取
+  while(($item=@readdir($handle))!==false){
+    //去掉.和..操作
+    if($item!='.'&&$item!='..'){
+      return false;
+    }
+  }
+  //关闭句柄
+  closedir($handle);
+  return true;
+}
+// var_dump(check_empty_dir('a'));
+// var_dump(check_empty_dir('d'));
+
+
+
+
+/**
+ * 返回目录下所有内容
+ * @method read_directory1
+ * @param  string          $path 目录名称
+ * @return mixed            false|array
+ */
+function read_directory(string $path){
+  if(!is_dir($path)){
+    return false;
+  }
+  $handle=opendir($path);
+  while(($item=@readdir($handle))!==false){
+    if($item!='.'&&$item!='..'){
+      $pathName=$path.DIRECTORY_SEPARATOR.$item;
+      if(is_file($pathName)){
+        $arr['file'][]=$pathName;
+      }elseif(is_dir($pathName)){
+        $arr['dir'][]=$pathName;
+      }
+    }
+  }
+  closedir($handle);
+  return $arr;
+}
+// $res=read_directory1('a');
+// print_r($res);
+
+
+/**
+ * 读取目录中的所有文件，包括内部文件夹下的文件，不建议使用
+ * @method get_all_files
+ * @param  string        $path 目录名称
+ * @return mixed              false|array
+ */
+function get_all_files(string $path){
+  if(!is_dir($path)){
+    return false;
+  }
+  if($handle=opendir($path)){
+    $res=[];
+    while(($item=readdir($handle))!==false){
+      if($item!='.'&&$item!='..'){
+        $pathName=$path.DIRECTORY_SEPARATOR.$item;
+        is_dir($pathName)?$res[$pathName]=get_all_files($pathName):$res[]=$pathName;
+      }
+    }
+    closedir($handle);
+    return $res;
+  }else{
+    return false;
+  }
+}
+
+// print_r(get_all_files('a'));
+/**
+ * 得到目录大小
+ * @method get_dir_size
+ * @param  string       $path 目录名称
+ * @return mixed             false|int
+ */
+function get_dir_size(string $path){
+  if(!is_dir($path)){
+    return false;
+  }
+  static $sum=0;
+  $handle=opendir($path);
+  while(($item=readdir($handle))!==false){
+    if($item!='.'&&$item!='..'){
+      $pathName=$path.DIRECTORY_SEPARATOR.$item;
+      if(is_file($pathName)){
+        $sum+=filesize($pathName);
+      }else{
+        $func=__FUNCTION__;
+        $func($pathName);
+      }
+    }
+  }
+  closedir($handle);
+  return $sum;
+}
+// echo get_dir_size('a');
+/**
+ * 重命名目录
+ * @method rename_dir
+ * @param  string     $oldName 原目录
+ * @param  string     $newName 新目录
+ * @return boolean              true|false
+ */
+function rename_dir(string $oldName,string $newName){
+  //检测原文件是否存在,或者当前目录下存在同名目录
+  $dest=dirname($oldName).DIRECTORY_SEPARATOR.$newName;
+  if(!is_dir($oldName)|| file_exists($dest)){
+    return false;
+  }
+  if(rename($oldName,$dest)){
+    return true;
+  }
+  return false;
+}
+//重命名
+// var_dump(rename_dir('a','aaaa'));
+// var_dump(rename_dir('b','c'));
+/**
+ * 剪切目录
+ * @method cut_dir
+ * @param  string  $src 原目录
+ * @param  string  $dst 新目录位置
+ * @return boolean       true|false
+ */
+function cut_dir(string $src,string $dst){
+  //检测原目录是否存在，不存在返回false
+  if(!is_dir($src)){
+    return false;
+  }
+  //检测目录路径是否存在，不存在则创建
+  if(!is_dir($dst)){
+    mkdir($dst,755,true);
+  }
+  //检测目录路径下是否存在同名目录
+  $dest=$dst.DIRECTORY_SEPARATOR.basename($src);
+  if(is_dir($dest)){
+    return false;
+  }
+  //剪切
+  if(rename($src,$dest)){
+    return true;
+  }
+  return false;
+}
+// var_dump(cut_dir('d','uploads'));
+// var_dump(cut_dir('c','test1'));
+// var_dump(cut_dir('test1','test2'));
+/**
+ * 拷贝目录操作
+ * @method copy_dir
+ * @param  string   $src 原目录
+ * @param  string   $dst 目标路径
+ * @return boolean        true|false
+ */
+function copy_dir(string $src,string $dst){
+  //检测原目录是否存在
+  if(!is_dir($src)){
+    return false;
+  }
+  //检测目标目录是否存在，不存在则创建
+  if(!is_dir($dst)){
+    mkdir($dst,755,true);
+  }
+  //检测目标目录下是否存在同名文件
+  $dest=$dst.DIRECTORY_SEPARATOR.basename($src);
+  if(is_dir($dest)){
+    return false;
+  }
+  $handle=opendir($src);
+  while(($item=@readdir($handle))!==false){
+    if($item!='.'&&$item!='..'){
+      if(is_file($src.DIRECTORY_SEPARATOR.$item)){
+        copy($src.DIRECTORY_SEPARATOR.$item,$dst.DIRECTORY_SEPARATOR.$item);
+      }
+      if(is_dir($src.DIRECTORY_SEPARATOR.$item)){
+        $func=__FUNCTION__;
+        $func($src.DIRECTORY_SEPARATOR.$item,$dst.DIRECTORY_SEPARATOR.$item);
+      }
+    }
+  }
+  closedir($handle);
+  return true;
+}
+// var_dump(copy_dir('uploads','test2/uploads'));
+
+/**
+ * 删除非空目录
+ * @method del_dir
+ * @param  string  $path 目录名称
+ * @return boolean        true|false
+ */
+function del_dir(string $path){
+  //检测目录是否存在
+  if(!is_dir($path)){
+    return false;
+  }
+  $handle=opendir($path);
+  while(($item=@readdir($handle))!==false){
+    if($item!='.'&&$item!='..'){
+      $pathName=$path.DIRECTORY_SEPARATOR.$item;
+      if(is_file($pathName)){
+        @unlink($pathName);
+      }else{
+        $func=__FUNCTION__;
+        $func($pathName);
+      }
+    }
+  }
+  closedir($handle);
+  rmdir($path);
+  return true;
+}
