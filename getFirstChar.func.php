@@ -72,5 +72,5 @@ function pinyin1($zh){
     }
     return $ret;
 }
-$str = '中国农业科学院农业资源与农业区划研究所';
-echo pinyin1($str);
+// $str = '中国农业科学院农业资源与农业区划研究所';
+// echo pinyin1($str);
