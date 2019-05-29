@@ -418,9 +418,10 @@ function down_file(string $filename,array $allowDownExt=array('jpeg','jpg','png'
  * @method down_file
  * @param  string    $filename     文件名
  * @param  array     $allowDownExt 允许下载的文件类型
+ * @param  int       $read_buffer  每次读取多少字节
  * @return void
  */
-function down_file1(string $filename,array $allowDownExt=array('jpeg','jpg','png','gif','txt','html','php','rar','zip')){
+function down_file1(string $filename,array $allowDownExt=array('jpeg','jpg','png','gif','txt','html','php','rar','zip'),$read_buffer=1024){
   //检测下载文件是否存在，并且可读
   if(!is_file($filename)||!is_readable($filename)){
     return false;
@@ -448,7 +449,7 @@ function down_file1(string $filename,array $allowDownExt=array('jpeg','jpg','png
   //读取文件中的内容
 
   //规定每次读取文件的字节数为1024字节，直接输出数据
-  $read_buffer=1024;
+  // $read_buffer=1024;
   $sum_buffer=0;
   $handle=fopen($filename,'rb');
   while(!feof($handle) && $sum_buffer<$filesize){

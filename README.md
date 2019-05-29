@@ -4,3 +4,5 @@
 4、file.func.php是一些操作文件和目录的函数。
 5、getFirstChar.func.php是可以获取一串中文字符串的拼音首字母的函数。
 6、tools.func.php是用来操作session的函数。
+7、UploadFile.php是封装的一个上传类，可用于单文件和多文件上传
+8、DownloadFile.php是封装的一个下载函数

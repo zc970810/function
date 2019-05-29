@@ -1,4 +1,69 @@
 <?php
+
+
+// 前端：
+// <form action="files.php" method="post" enctype="multipart/form-data">
+//     <input type="file" name="imooc[]" multiple="multipart"> 
+//     <input type="submit" name="" value="提交">
+// </form> 
+// 或者：
+// <form action="files.php" method="post" enctype="multipart/form-data">
+//     <input type="file" name="imooc[]"> 
+//     <input type="file" name="imooc[]"> 
+//     <input type="file" name="imooc[]"> 
+//     <input type="submit" name="" value="提交">
+// </form> 
+
+// -----------------------
+// // 实例化对象，传入file的name
+// $uploads = new UploadFile('imooc');
+
+// // 设置存储路径
+// $uploads -> setDestinationDir('./uploads/imooc');
+// /* 设置MIME类型
+// 超文本标记语言文本 .html text/html
+// xml文档 .xml text/xml
+// XHTML文档 .xhtml application/xhtml+xml
+// 普通文本 .txt text/plain
+// RTF文本 .rtf application/rtf
+// PDF文档 .pdf application/pdf
+// Microsoft Word文件 .word application/msword
+// PNG图像 .png image/png
+// GIF图形 .gif image/gif
+// JPEG图形 .jpeg,.jpg image/jpeg
+// au声音文件 .au audio/basic
+// MIDI音乐文件 mid,.midi audio/midi,audio/x-midi
+// RealAudio音乐文件 .ra, .ram audio/x-pn-realaudio
+// MPEG文件 .mpg,.mpeg video/mpeg
+// AVI文件 .avi video/x-msvideo
+// GZIP文件 .gz application/x-gzip
+// TAR文件 .tar application/x-tar
+// 任意的二进制数据 application/octet-stream
+// */
+// $uploads -> setAllowMime(['image/png','image/gif','image/jpeg']);
+// // 设置允许上传的后缀名
+// $uploads -> setAllowExt(['jpg','png','gif','jpeg','JPG','GIF','PNG','JPEG']);
+// // 设置允许上传的最大字节
+// $uploads -> setAllowSize(2*1024*1024);
+
+// // 如果上传成功
+// if ($uploads -> upload()) {
+//     // 成功后存储的名字
+//     print_r($uploads->getFileName());
+//     // 存储路径
+//     print_r($uploads->getDestinationDir());
+//     // 存储后缀
+//     print_r($uploads->getExtension());
+//     // 存储大小
+//     print_r($uploads->getFileSize());
+// }else{
+//     // 失败返回错误信息  key是对应的第几个文件出错 value是错误原因，只有失败的不上传，其他的上传成功
+//     print_r($uploads->getErrors());
+// }
+
+
+
+
 /**
  * 上传函数封装类
  */
@@ -347,48 +412,3 @@ class UploadFile
 
 }
 
-// 实例化对象，传入file的name
-$uploads = new UploadFile('imooc');
-
-// 设置存储路径
-$uploads -> setDestinationDir('./uploads/imooc');
-/* 设置MIME类型
-超文本标记语言文本 .html text/html
-xml文档 .xml text/xml
-XHTML文档 .xhtml application/xhtml+xml
-普通文本 .txt text/plain
-RTF文本 .rtf application/rtf
-PDF文档 .pdf application/pdf
-Microsoft Word文件 .word application/msword
-PNG图像 .png image/png
-GIF图形 .gif image/gif
-JPEG图形 .jpeg,.jpg image/jpeg
-au声音文件 .au audio/basic
-MIDI音乐文件 mid,.midi audio/midi,audio/x-midi
-RealAudio音乐文件 .ra, .ram audio/x-pn-realaudio
-MPEG文件 .mpg,.mpeg video/mpeg
-AVI文件 .avi video/x-msvideo
-GZIP文件 .gz application/x-gzip
-TAR文件 .tar application/x-tar
-任意的二进制数据 application/octet-stream
-*/
-$uploads -> setAllowMime(['image/png','image/gif','image/jpeg']);
-// 设置允许上传的后缀名
-$uploads -> setAllowExt(['jpg','png','gif','jpeg','JPG','GIF','PNG','JPEG']);
-// 设置允许上传的最大字节
-$uploads -> setAllowSize(2*1024*1024);
-
-// 如果上传成功
-if ($uploads -> upload()) {
-    // 成功后存储的名字
-    print_r($uploads->getFileName());
-    // 存储路径
-    print_r($uploads->getDestinationDir());
-    // 存储后缀
-    print_r($uploads->getExtension());
-    // 存储大小
-    print_r($uploads->getFileSize());
-}else{
-    // 失败返回错误信息  key是对应的第几个文件出错 value是错误原因，只有失败的不上传，其他的上传成功
-    print_r($uploads->getErrors());
-}
